@@ -4,101 +4,26 @@
     <meta charset="utf-8">
     <title>AdminPlay | Ported by Damien</title>
     <style type="text/css">
-      body { 
-        margin: 0; 
-        background-color: #050505; 
-        display: flex; 
-        flex-direction: column; 
-        align-items: center; 
-        justify-content: center; 
-        height: 100vh; 
-        overflow: hidden; 
-        font-family: 'Segoe UI', sans-serif; 
-        background-image: radial-gradient(white, rgba(255,255,255,.3) 1px, transparent 20px), radial-gradient(white, rgba(255,255,255,.2) 1px, transparent 30px); 
-        background-size: 400px 400px, 250px 250px; 
-        animation: spaceFly 40s linear infinite; 
-      }
+      body { margin: 0; background-color: #050505; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; font-family: 'Segoe UI', sans-serif; background-image: radial-gradient(white, rgba(255,255,255,.3) 1px, transparent 20px), radial-gradient(white, rgba(255,255,255,.2) 1px, transparent 30px); background-size: 400px 400px, 250px 250px; animation: spaceFly 40s linear infinite; }
       @keyframes spaceFly { from { background-position: 0 0, 0 0; } to { background-position: 400px 800px, 250px 500px; } }
-      
-      #game-wrapper { 
-        position: relative; 
-        width: 960px; 
-        height: 540px; 
-        border: 2px solid #4ade80; 
-        border-radius: 12px; 
-        background: #000; 
-        box-shadow: 0 0 40px rgba(74, 222, 128, 0.2); 
-        overflow: hidden; 
-        z-index: 5; 
-      }
+      #game-wrapper { position: relative; width: 960px; height: 540px; border: 2px solid #4ade80; border-radius: 12px; background: #000; box-shadow: 0 0 40px rgba(74, 222, 128, 0.2); overflow: hidden; z-index: 5; }
       #canvas { width: 100% !important; height: 100% !important; display: block; outline: none; }
-      
-      #inner-loading { 
-        position: absolute; 
-        top: 0; 
-        left: 0; 
-        width: 100%; 
-        height: 100%; 
-        background: #000; 
-        display: none; 
-        flex-direction: column; 
-        align-items: center; 
-        justify-content: center; 
-        z-index: 20; 
-      }
-      .loader-pulse { 
-        width: 60px; 
-        height: 60px; 
-        border: 3px solid rgba(74, 222, 128, 0.1); 
-        border-radius: 50%; 
-        border-top-color: #4ade80; 
-        animation: spin 1s ease-in-out infinite; 
-      }
+      #inner-loading { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 20; }
+      .loader-pulse { width: 60px; height: 60px; border: 3px solid rgba(74, 222, 128, 0.1); border-radius: 50%; border-top-color: #4ade80; animation: spin 1s ease-in-out infinite; }
       @keyframes spin { to { transform: rotate(360deg); } }
-      
-      #port-modal { 
-        position: fixed; 
-        top: 0; 
-        left: 0; 
-        width: 100%; 
-        height: 100%; 
-        background: rgba(0,0,0,0.92); 
-        backdrop-filter: blur(8px); 
-        display: flex; 
-        align-items: center; 
-        justify-content: center; 
-        z-index: 1000; 
-      }
-      .modal-content { 
-        background: rgba(10, 20, 10, 0.95); 
-        color: white; 
-        padding: 60px; 
-        border-radius: 40px; 
-        border: 1px solid #4ade80; 
-        text-align: center; 
-      }
-      button { 
-        background: transparent; 
-        color: #4ade80; 
-        border: 2px solid #4ade80; 
-        padding: 20px 60px; 
-        font-weight: 900; 
-        border-radius: 50px; 
-        cursor: pointer; 
-        text-transform: uppercase; 
-        transition: 0.4s; 
-      }
+      #port-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+      .modal-content { background: rgba(10, 20, 10, 0.95); color: white; padding: 60px; border-radius: 40px; border: 1px solid #4ade80; text-align: center; }
+      button { background: transparent; color: #4ade80; border: 2px solid #4ade80; padding: 20px 60px; font-weight: 900; border-radius: 50px; cursor: pointer; text-transform: uppercase; transition: 0.4s; }
       button:hover { background: #4ade80; color: #000; box-shadow: 0 0 30px #4ade80; }
       .tag { position: absolute; bottom: 10px; right: 15px; color: rgba(74, 222, 128, 0.4); font-size: 10px; font-weight: bold; }
     </style>
-    
     <script src="https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/index.js"></script>
   </head>
   <body>
 
     <div id="port-modal">
       <div class="modal-content">
-        <h1 style="margin-top:0;">ADMIN PLAY</h1>
+        <h1>ADMIN PLAY</h1>
         <p>System Port by <b>Damien / Snakierdoor</b></p>
         <button onclick="startLoading()">LAUNCH ADMIN</button>
       </div>
@@ -107,7 +32,7 @@
     <div id="game-wrapper">
         <div id="inner-loading">
           <div class="loader-pulse"></div>
-          <p id="status-text" style="color: #4ade80; margin-top: 20px; font-weight: bold; letter-spacing: 2px; font-size: 11px; font-family: monospace;">CONNECTING...</p>
+          <p id="status-text" style="color: #4ade80; margin-top: 20px; font-weight: bold; letter-spacing: 2px; font-size: 11px; font-family: monospace;">INITIALIZING...</p>
         </div>
         <canvas id="canvas"></canvas>
         <div class="tag">DAMIEN / SNAKIERDOOR</div>
@@ -119,40 +44,36 @@
         document.getElementById('inner-loading').style.display = 'flex';
         const status = document.getElementById('status-text');
         
-        const BASE_URL = "https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/";
+        const BASE = "https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/";
 
-        // Initialize engine and map URLs
+        // Config object using 'mainPack' property directly
         const engine = new Engine({
           canvas: document.getElementById('canvas'),
+          executable: BASE + "index",
+          mainPack: BASE + "index.pck",
           locateFile: function(path) {
-            if (path.endsWith('.wasm')) return BASE_URL + "index.wasm";
-            if (path.endsWith('.pck')) return BASE_URL + "index.pck";
-            return BASE_URL + path;
+            if (path.endsWith('.wasm')) return BASE + "index.wasm";
+            if (path.endsWith('.pck')) return BASE + "index.pck";
+            return BASE + path;
           }
         });
 
-        status.innerText = "LOADING WASM ENGINE...";
-        
-        // Manual loading sequence for Godot 3.2.3 Mono
-        engine.init(BASE_URL + "index")
-          .then(() => {
-            status.innerText = "DOWNLOADING GAME DATA...";
-            // We load the PCK from the URL but label it "index.pck" in the engine's memory
-            return engine.preloadFile(BASE_URL + "index.pck", "index.pck");
-          })
-          .then(() => {
-            status.innerText = "STARTING MODULES...";
-            // We pass arguments as an array [] so the internal ccall works
-            return engine.start(["--main-pack", "index.pck"]);
-          })
-          .then(() => {
-            document.getElementById('inner-loading').style.display = 'none';
-          })
-          .catch((err) => {
-            console.error("Boot failure:", err);
-            status.innerText = "ERROR: SYSTEM CANNOT OPEN DATA";
-            status.style.color = "#ff4444";
+        status.innerText = "LOADING ENGINE & DATA...";
+
+        // Use startGame with no arguments - it will use 'mainPack' from the config
+        engine.startGame().then(() => {
+          document.getElementById('inner-loading').style.display = 'none';
+        }).catch(err => {
+          console.error("Standard boot failed, trying manual override...");
+          
+          // Manual fallback if startGame fails
+          engine.init(BASE + "index").then(() => {
+            return engine.preloadFile(BASE + "index.pck", "index.pck");
+          }).then(() => {
+            // Passing the path as a single string inside the array
+            return engine.start({ args: ["--main-pack", "index.pck"] });
           });
+        });
       }
     </script>
   </body>
