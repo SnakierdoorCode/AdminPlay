@@ -15,7 +15,6 @@
       .modal-content { background: rgba(10, 20, 10, 0.95); color: white; padding: 60px; border-radius: 40px; border: 1px solid #4ade80; text-align: center; }
       button { background: transparent; color: #4ade80; border: 2px solid #4ade80; padding: 20px 60px; font-weight: 900; border-radius: 50px; cursor: pointer; text-transform: uppercase; transition: 0.4s; }
       button:hover { background: #4ade80; color: #000; box-shadow: 0 0 30px #4ade80; }
-      .tag { position: absolute; bottom: 10px; right: 15px; color: rgba(74, 222, 128, 0.4); font-size: 10px; font-weight: bold; }
     </style>
     <script src="https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/index.js"></script>
   </head>
@@ -32,10 +31,9 @@
     <div id="game-wrapper">
         <div id="inner-loading">
           <div class="loader-pulse"></div>
-          <p id="status-text" style="color: #4ade80; margin-top: 20px; font-weight: bold; font-family: monospace;">INITIALIZING...</p>
+          <p id="status-text" style="color: #4ade80; margin-top: 20px; font-weight: bold; font-family: monospace;">BYPASSING LOADER...</p>
         </div>
         <canvas id="canvas"></canvas>
-        <div class="tag">DAMIEN / SNAKIERDOOR</div>
     </div>
 
     <script>
@@ -51,42 +49,34 @@
           locateFile: (path) => BASE + path
         });
 
-        status.innerText = "OPENING CORE...";
+        // The Deep Spoof: 
+        // We create the object that line 122 is looking for.
+        // Most Godot 3.2.3 loaders expect 'file' and 'path' to be exactly these types.
+        const fakePck = {
+          file: BASE + "index.pck",
+          path: "index.pck"
+        };
+
+        status.innerText = "INITIALIZING...";
 
         engine.init(BASE + "index").then(() => {
-          status.innerText = "MOUNTING PROJECT...";
-
-          // THE TRIPLE THREAT:
-          // We attempt to preload the file using three different methods 
-          // to bypass the check on line 122.
+          status.innerText = "DOWNLOADING DATA...";
           
-          const pckData = {
-            "path": "index.pck",
-            "url": BASE + "index.pck"
-          };
-
-          try {
-            // Attempt 1: Standard Object
-            return engine.preloadFile(pckData);
-          } catch (e) {
-            try {
-              // Attempt 2: Array-Wrapped Object (Common for Mono builds)
-              return engine.preloadFile([pckData]);
-            } catch (e2) {
-              // Attempt 3: The "Raw URL" string (Oldest method)
-              return engine.preloadFile(BASE + "index.pck");
-            }
-          }
+          // We pass the spoofed object. 
+          // If this still triggers the 'throw', we will use the RAW startGame bypass.
+          return engine.preloadFile(fakePck);
           
         }).then(() => {
-          status.innerText = "EXECUTING...";
+          status.innerText = "STARTING...";
           return engine.start(["--main-pack", "index.pck"]);
         }).then(() => {
           document.getElementById('inner-loading').style.display = 'none';
         }).catch((err) => {
-          console.error("Critical Failure:", err);
-          status.innerText = "BOOT ERROR - SEE CONSOLE";
-          status.style.color = "#ff4444";
+          console.warn("Standard preload rejected, attempting RAW START bypass...");
+          
+          // FINAL FALLBACK: Skip preloading entirely and let engine.start 
+          // fetch it via the command line arguments.
+          engine.start(["--main-pack", BASE + "index.pck"]);
         });
       }
     </script>
