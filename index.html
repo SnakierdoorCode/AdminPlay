@@ -1,55 +1,53 @@
 <html lang="en-us">
 <head>
     <meta charset="utf-8">
-    <title>Office System | AdminPlay Port</title>
+    <title>Office System | Night Shift</title>
     <style>
         :root {
             --office-blue: #0078d4;
-            --glass: rgba(255, 255, 255, 0.85);
-            --desk-bg: #f3f2f1;
+            --dark-ui: #1b1b1b;
+            --deep-bg: #0d0d0d;
+            --text-main: #e1dfdd;
         }
 
         body { 
             margin: 0; 
-            background-color: var(--desk-bg); 
+            background-color: var(--deep-bg); 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             justify-content: center; 
             height: 100vh; 
             overflow: hidden; 
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            /* Office Floor Plan Grid Effect */
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            /* Dark Grid - much easier on the eyes */
             background-image: 
-                linear-gradient(rgba(0, 120, 212, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 120, 212, 0.05) 1px, transparent 1px);
-            background-size: 50px 50px;
-            animation: gridScroll 60s linear infinite;
+                linear-gradient(rgba(0, 120, 212, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 120, 212, 0.1) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: gridScroll 100s linear infinite;
         }
 
         @keyframes gridScroll {
             from { background-position: 0 0; }
-            to { background-position: 500px 500px; }
+            to { background-position: 600px 600px; }
         }
 
         #game-wrapper { 
             position: relative; 
             width: 960px; 
             height: 540px; 
-            border: 1px solid #d2d0ce; 
-            border-radius: 8px; 
-            background: #ffffff; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.1); 
+            border: 1px solid #333; 
+            border-radius: 4px; 
+            background: #000; 
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5); 
             z-index: 5;
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Fullscreen logic */
         #game-wrapper:fullscreen {
             width: 100vw;
             height: 100vh;
             border: none;
-            border-radius: 0;
         }
 
         canvas { 
@@ -57,106 +55,76 @@
             height: 100% !important; 
             display: block; 
             outline: none; 
+            /* THE PIXEL FIX: Prevents the browser from blurring the image */
             image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
+            image-rendering: pixelated;
         }
 
-        /* Office "Login" Overlay */
+        /* Dark Mode Overlay */
         #overlay { 
             position: absolute; 
             inset: 0; 
-            background: var(--glass); 
-            backdrop-filter: blur(12px); 
+            background: rgba(13, 13, 13, 0.9); 
+            backdrop-filter: blur(10px); 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             justify-content: center; 
             z-index: 1000; 
-            color: #323130;
-            text-align: center;
+            color: var(--text-main);
         }
 
         .office-card {
-            background: white;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            border: 1px solid #e1dfdd;
+            background: var(--dark-ui);
+            padding: 50px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            text-align: center;
         }
 
-        h1 { font-size: 2.2rem; margin: 0; font-weight: 600; color: #201f1e; }
-        p { color: #605e5c; margin-bottom: 25px; font-size: 14px; }
+        h1 { font-size: 2rem; margin: 0; font-weight: 300; letter-spacing: 4px; color: var(--office-blue); }
+        p { color: #a19f9d; margin-bottom: 30px; font-size: 13px; letter-spacing: 1px; }
 
         .ui-btn { 
             background: var(--office-blue); 
             color: white; 
             border: none; 
-            padding: 12px 30px; 
+            padding: 12px 40px; 
             font-weight: 600; 
-            border-radius: 4px; 
+            border-radius: 2px; 
             cursor: pointer; 
-            transition: 0.2s; 
-            font-size: 15px;
+            transition: 0.3s; 
+            text-transform: uppercase;
+            font-size: 14px;
         }
 
-        .ui-btn:hover { 
-            background: #106ebe; 
-            box-shadow: 0 4px 8px rgba(0, 120, 212, 0.3); 
-        }
+        .ui-btn:hover { background: #2b88d8; filter: brightness(1.2); }
 
-        /* Utility Buttons */
         #fs-btn {
             position: absolute;
             bottom: 20px;
             right: 20px;
-            background: rgba(255,255,255,0.8);
-            border: 1px solid #d2d0ce;
-            color: #323130;
-            padding: 6px 12px;
-            font-size: 11px;
+            background: rgba(27, 27, 27, 0.8);
+            border: 1px solid #444;
+            color: #888;
+            padding: 8px 16px;
+            font-size: 10px;
             z-index: 101;
-            border-radius: 4px;
+            cursor: pointer;
         }
 
         .corner-tag {
             position: absolute;
-            bottom: 15px;
+            bottom: 20px;
             left: 20px;
-            color: #a19f9d;
+            color: #444;
             font-size: 10px;
-            font-weight: 600;
-            z-index: 101;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        #status { 
-            margin-top: 15px; 
-            color: var(--office-blue); 
-            font-size: 11px; 
             font-weight: bold;
+            letter-spacing: 2px;
         }
 
-        /* Animated Loading Bar */
-        .progress-box {
-            width: 200px;
-            height: 4px;
-            background: #edebe9;
-            border-radius: 2px;
-            margin-top: 20px;
-            overflow: hidden;
-            display: none;
-        }
-        .progress-fill {
-            width: 40%;
-            height: 100%;
-            background: var(--office-blue);
-            animation: loading 2s infinite ease-in-out;
-        }
-        @keyframes loading {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(250%); }
-        }
+        #status { margin-top: 20px; color: var(--office-blue); font-size: 10px; font-family: monospace; }
     </style>
 </head>
 <body>
@@ -164,16 +132,15 @@
     <div id="game-wrapper">
         <canvas id="canvas" tabindex="0"></canvas>
         
-        <div class="corner-tag">Employee Access: DAMIEN / SNAKIERDOOR</div>
-        <button id="fs-btn" style="display:none;">MAXIMIZE WINDOW</button>
+        <div class="corner-tag">SNAKIERDOOR // DAMIEN</div>
+        <button id="fs-btn" style="display:none;">EXPAND VIEW</button>
 
         <div id="overlay">
             <div class="office-card">
-                <h1>AdminPlay</h1>
-                <p>Authorized Personnel Only<br><b>Port by Snakierdoor</b></p>
-                <button id="launch-btn" class="ui-btn">SIGN IN</button>
-                <div id="progress" class="progress-box"><div class="progress-fill"></div></div>
-                <div id="status">IDLE</div>
+                <h1>ADMIN PLAY</h1>
+                <p>NIGHT SHIFT PROTOCOL ACTIVE</p>
+                <button id="launch-btn" class="ui-btn">BOOT SESSION</button>
+                <div id="status">STANDBY</div>
             </div>
         </div>
     </div>
@@ -185,46 +152,49 @@
         const fsBtn = document.getElementById('fs-btn');
         const status = document.getElementById('status');
         const overlay = document.getElementById('overlay');
-        const wrapper = document.getElementById('game-wrapper');
-        const progress = document.getElementById('progress');
+        const canvas = document.getElementById('canvas');
         const REPO = "https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/";
 
+        // HIDPI FIX: This forces the canvas to render at your screen's actual resolution
+        function adjustResolution() {
+            const scale = window.devicePixelRatio || 1;
+            canvas.width = 960 * scale;
+            canvas.height = 540 * scale;
+        }
+        window.addEventListener('resize', adjustResolution);
+        adjustResolution();
+
         fsBtn.addEventListener('click', () => {
-            if (!document.fullscreenElement) wrapper.requestFullscreen();
+            if (!document.fullscreenElement) document.getElementById('game-wrapper').requestFullscreen();
             else document.exitFullscreen();
         });
 
         launchBtn.addEventListener('click', async () => {
             launchBtn.style.display = 'none';
-            progress.style.display = 'block';
-            status.innerText = "VERIFYING CREDENTIALS...";
+            status.innerText = "INITIALIZING CORE...";
 
             const engine = new Engine({
-                canvas: document.getElementById('canvas'),
+                canvas: canvas,
                 locateFile: (path) => REPO + path
             });
 
             try {
-                status.innerText = "LOADING SYSTEM CORE...";
                 await engine.init(REPO + "index");
-
-                status.innerText = "SYNCING DATA PACKS...";
+                status.innerText = "STREAMING DATA...";
+                
                 const res = await fetch(REPO + "index.pck");
                 const buffer = await res.arrayBuffer();
-
                 engine.copyToFS("index.pck", buffer);
 
-                status.innerText = "STARTING SESSION...";
+                status.innerText = "STARTING...";
                 await engine.start("--main-pack", "index.pck");
 
                 overlay.style.display = 'none';
                 fsBtn.style.display = 'block';
 
             } catch (err) {
-                console.error(err);
                 status.innerText = "CONNECTION FAILED";
                 launchBtn.style.display = 'block';
-                progress.style.display = 'none';
             }
         });
     </script>
