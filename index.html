@@ -2,198 +2,80 @@
 <html lang="en-us">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AdminPlay | Ported by Damien</title>
+    <title>AdminPlay Port | Fixed</title>
     <style>
-        body { 
-            margin: 0; 
-            background-color: #050505; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
-            overflow: hidden; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-image: radial-gradient(white, rgba(255,255,255,.3) 1px, transparent 20px), radial-gradient(white, rgba(255,255,255,.2) 1px, transparent 30px);
-            background-size: 400px 400px, 250px 250px;
-            animation: spaceFly 40s linear infinite;
-        }
-
-        @keyframes spaceFly {
-            from { background-position: 0 0, 0 0; }
-            to { background-position: 400px 800px, 250px 500px; }
-        }
-
-        #game-wrapper { 
-            position: relative; 
-            width: 960px; 
-            height: 540px; 
-            border: 2px solid #4ade80; 
-            border-radius: 12px; 
-            background: #000; 
-            box-shadow: 0 0 40px rgba(74, 222, 128, 0.2); 
-            overflow: hidden; 
-            z-index: 5;
-        }
-
-        #canvas { 
-            width: 100% !important; 
-            height: 100% !important; 
-            display: block; 
-            outline: none; 
-        }
-
-        #inner-loading { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: #000; 
-            display: none; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            z-index: 20; 
-        }
-
-        .loader-pulse { 
-            width: 60px; 
-            height: 60px; 
-            border: 3px solid rgba(74, 222, 128, 0.1); 
-            border-radius: 50%; 
-            border-top-color: #4ade80; 
-            animation: spin 1s ease-in-out infinite; 
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        #port-modal { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(0,0,0,0.92); 
-            backdrop-filter: blur(8px); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            z-index: 1000; 
-        }
-
-        .modal-content { 
-            background: rgba(10, 20, 10, 0.95); 
-            color: white; 
-            padding: 60px; 
-            border-radius: 40px; 
-            border: 1px solid #4ade80; 
-            text-align: center; 
-            max-width: 500px;
-        }
-
-        h1 { font-size: 3rem; margin: 0; letter-spacing: 5px; color: #4ade80; }
-        p { color: #888; margin-bottom: 30px; }
-        b { color: #fff; }
-
-        button { 
-            background: transparent; 
-            color: #4ade80; 
-            border: 2px solid #4ade80; 
-            padding: 20px 60px; 
-            font-weight: 900; 
-            border-radius: 50px; 
-            cursor: pointer; 
-            text-transform: uppercase; 
-            transition: 0.4s; 
-            letter-spacing: 2px;
-        }
-
-        button:hover { 
-            background: #4ade80; 
-            color: #000; 
-            box-shadow: 0 0 30px #4ade80; 
-        }
-
-        .tag { 
-            position: absolute; 
-            bottom: 10px; 
-            right: 15px; 
-            color: rgba(74, 222, 128, 0.4); 
-            font-size: 10px; 
-            font-weight: bold; 
-            letter-spacing: 1px;
-        }
+        body { margin: 0; background: #050505; color: #4ade80; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: monospace; }
+        #game-container { position: relative; width: 960px; height: 540px; border: 2px solid #4ade80; background: #000; }
+        canvas { width: 100%; height: 100%; display: block; }
+        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; text-align: center; padding: 20px; }
+        button { background: none; border: 2px solid #4ade80; color: #4ade80; padding: 15px 30px; cursor: pointer; font-family: monospace; font-weight: bold; }
+        button:hover { background: #4ade80; color: #000; }
+        #status { margin-top: 15px; color: #888; font-size: 12px; }
     </style>
-    <script src="https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/index.js"></script>
 </head>
 <body>
 
-    <div id="port-modal">
-        <div class="modal-content">
+    <div id="game-container">
+        <div id="overlay">
             <h1>ADMIN PLAY</h1>
-            <p>System Port by <b>Damien / Snakierdoor</b></p>
-            <button onclick="startLoading()">LAUNCH ADMIN</button>
-        </div>
-    </div>
-
-    <div id="game-wrapper">
-        <div id="inner-loading">
-            <div class="loader-pulse"></div>
-            <p id="status-text" style="color: #4ade80; margin-top: 20px; font-weight: bold; font-family: monospace;">SYSTEM START...</p>
+            <button id="start-btn">INITIALIZE SYSTEM</button>
+            <div id="status">Checking resources...</div>
         </div>
         <canvas id="canvas"></canvas>
-        <div class="tag">DAMIEN / SNAKIERDOOR</div>
     </div>
 
-    <script>
-        async function startLoading() {
-            // UI Transition
-            document.getElementById('port-modal').style.display = 'none';
-            document.getElementById('inner-loading').style.display = 'flex';
-            const status = document.getElementById('status-text');
-            
-            const BASE = "https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/";
+    <script src="https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/index.js"></script>
 
-            // Initialize the Engine with your Canvas
+    <script>
+        const status = document.getElementById('status');
+        const startBtn = document.getElementById('start-btn');
+        
+        // Ensure this matches your GitHub folder structure EXACTLY
+        const BASE = "https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/";
+
+        startBtn.addEventListener('click', async () => {
+            startBtn.style.display = 'none';
+            status.innerText = "Connecting to Engine...";
+
+            if (typeof Engine === 'undefined') {
+                status.innerText = "ERROR: index.js not found (404). Check GitHub file name.";
+                return;
+            }
+
             const engine = new Engine({
                 canvas: document.getElementById('canvas'),
-                locateFile: (path) => BASE + path
+                // This tells the engine where to find the .wasm and .pck files
+                locateFile: (path) => {
+                    console.log("Engine requesting:", path);
+                    return BASE + path;
+                }
             });
 
             try {
-                // 1. Initialize WASM and Core
-                status.innerText = "INITIALIZING CORE...";
+                status.innerText = "Loading WASM core...";
+                // We point to the prefix, the engine adds .wasm automatically
                 await engine.init(BASE + "index");
 
-                // 2. Fetch the PCK file manually to bypass the "Invalid object" error
-                // This downloads the data into browser memory first
-                status.innerText = "DOWNLOADING ASSETS (PCK)...";
-                const response = await fetch(BASE + "index.pck");
+                status.innerText = "Downloading Game Data...";
+                const res = await fetch(BASE + "index.pck");
                 
-                if (!response.ok) throw new Error("Network error downloading index.pck");
+                if (!res.ok) throw new Error(`PCK missing at ${BASE}index.pck`);
                 
-                const pckBuffer = await response.arrayBuffer();
+                const buffer = await res.arrayBuffer();
 
-                // 3. Manually mount the file into the Emscripten Filesystem
-                // We use 'copyToFS' because your index.js explicitly provides it
-                status.innerText = "MOUNTING FILESYSTEM...";
-                engine.copyToFS("index.pck", pckBuffer);
+                status.innerText = "Injecting PCK...";
+                engine.copyToFS("index.pck", buffer);
 
-                // 4. Start the engine using the now-local file
-                status.innerText = "BOOTING ENGINE...";
+                status.innerText = "Starting Engine...";
                 await engine.start(["--main-pack", "index.pck"]);
-
-                // Success - Hide loader
-                document.getElementById('inner-loading').style.display = 'none';
-
+                
+                document.getElementById('overlay').style.display = 'none';
             } catch (err) {
-                console.error("Critical Boot Error:", err);
-                status.innerText = "BOOT FAILED: " + err.message;
+                console.error("Boot Error:", err);
+                status.innerText = "FATAL: " + err.message;
                 status.style.color = "#ff4444";
             }
-        }
+        });
     </script>
 </body>
 </html>
