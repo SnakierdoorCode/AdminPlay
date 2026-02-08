@@ -13,7 +13,7 @@
         justify-content: center; 
         height: 100vh; 
         overflow: hidden; 
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        font-family: 'Segoe UI', sans-serif; 
         background-image: radial-gradient(white, rgba(255,255,255,.3) 1px, transparent 20px), radial-gradient(white, rgba(255,255,255,.2) 1px, transparent 30px); 
         background-size: 400px 400px, 250px 250px; 
         animation: spaceFly 40s linear infinite; 
@@ -98,7 +98,7 @@
 
     <div id="port-modal">
       <div class="modal-content">
-        <h1>ADMIN PLAY</h1>
+        <h1 style="margin-top:0;">ADMIN PLAY</h1>
         <p>System Port by <b>Damien / Snakierdoor</b></p>
         <button onclick="startLoading()">LAUNCH ADMIN</button>
       </div>
@@ -115,15 +115,13 @@
 
     <script>
       function startLoading() {
-        // UI Logic
         document.getElementById('port-modal').style.display = 'none';
         document.getElementById('inner-loading').style.display = 'flex';
         const status = document.getElementById('status-text');
         
-        // Configuration Constants
         const BASE_URL = "https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/";
 
-        // 1. Initialize Engine with manual file mapping
+        // Initialize engine and map URLs
         const engine = new Engine({
           canvas: document.getElementById('canvas'),
           locateFile: function(path) {
@@ -133,30 +131,26 @@
           }
         });
 
-        // 2. The Low-Level Execution Chain
         status.innerText = "LOADING WASM ENGINE...";
         
-        // We initialize with the base name (index) so it fetches index.wasm
+        // Manual loading sequence for Godot 3.2.3 Mono
         engine.init(BASE_URL + "index")
           .then(() => {
-            status.innerText = "PRELOADING GAME DATA (PCK)...";
-            // Manually inject the PCK into the engine's virtual memory
-            return engine.preloadFile(BASE_URL + "index.pck");
+            status.innerText = "DOWNLOADING GAME DATA...";
+            // We load the PCK from the URL but label it "index.pck" in the engine's memory
+            return engine.preloadFile(BASE_URL + "index.pck", "index.pck");
           })
           .then(() => {
-            status.innerText = "BOOTING KERNEL...";
-            // Start the engine using the file we just preloaded
-            // We pass the PCK as an argument to ensure it's selected as the main pack
-            return engine.start("--main-pack", "index.pck");
+            status.innerText = "STARTING MODULES...";
+            // We pass arguments as an array [] so the internal ccall works
+            return engine.start(["--main-pack", "index.pck"]);
           })
           .then(() => {
-            // Finalize
-            status.innerText = "SUCCESS";
             document.getElementById('inner-loading').style.display = 'none';
           })
           .catch((err) => {
-            console.error("Critical Failure in Loading Chain:", err);
-            status.innerText = "BOOT FAILED. SEE CONSOLE.";
+            console.error("Boot failure:", err);
+            status.innerText = "ERROR: SYSTEM CANNOT OPEN DATA";
             status.style.color = "#ff4444";
           });
       }
