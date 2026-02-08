@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <title>AdminPlay | Ported by Damien</title>
     <style type="text/css">
-      body { margin: 0; background-color: #050505; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; font-family: 'Segoe UI', sans-serif; background-image: radial-gradient(white, rgba(255,255,255,.3) 1px, transparent 20px), radial-gradient(white, rgba(255,255,255,.2) 1px, transparent 30px); background-size: 400px: 400px, 250px 250px; animation: spaceFly 40s linear infinite; }
+      body { margin: 0; background-color: #050505; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; font-family: 'Segoe UI', sans-serif; background-image: radial-gradient(white, rgba(255,255,255,.3) 1px, transparent 20px), radial-gradient(white, rgba(255,255,255,.2) 1px, transparent 30px); background-size: 400px 400px, 250px 250px; animation: spaceFly 40s linear infinite; }
       @keyframes spaceFly { from { background-position: 0 0, 0 0; } to { background-position: 400px 800px, 250px 500px; } }
       #game-wrapper { position: relative; width: 960px; height: 540px; border: 2px solid #4ade80; border-radius: 12px; background: #000; box-shadow: 0 0 40px rgba(74, 222, 128, 0.2); overflow: hidden; z-index: 5; }
       #canvas { width: 100% !important; height: 100% !important; display: block; outline: none; }
@@ -17,7 +17,6 @@
       button:hover:not(:disabled) { background: #4ade80; color: #000; box-shadow: 0 0 30px #4ade80; }
       .tag { position: absolute; bottom: 10px; right: 15px; color: rgba(74, 222, 128, 0.4); font-size: 10px; font-weight: bold; }
     </style>
-    
     <script src="https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/index.js"></script>
   </head>
   <body>
@@ -33,7 +32,7 @@
     <div id="game-wrapper">
         <div id="inner-loading">
           <div class="loader-pulse"></div>
-          <p style="color: #4ade80; margin-top: 20px; font-weight: bold; letter-spacing: 2px; font-size: 11px;">REPAIRING FILE PATHS...</p>
+          <p id="status-text" style="color: #4ade80; margin-top: 20px; font-weight: bold; letter-spacing: 2px; font-size: 11px;">LOADING ENGINE...</p>
         </div>
         <canvas id="canvas"></canvas>
         <div class="tag">DAMIEN / SNAKIERDOOR</div>
@@ -43,25 +42,26 @@
       function startLoading() {
         document.getElementById('port-modal').style.display = 'none';
         document.getElementById('inner-loading').style.display = 'flex';
+        const status = document.getElementById('status-text');
         
         const BASE = "https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/";
 
-        // Define the engine
+        // 1. Create the engine instance
         const engine = new Engine();
 
-        // MANUALLY TRIGGER INIT WITH THE FILENAME
-        // We pass "index" so the engine looks for "index.wasm" instead of just ".wasm"
-        engine.init(BASE + "index").then(() => {
-            return engine.startGame({
-                "executable": BASE + "index",
-                "mainPack": BASE + "index.pck",
-                "canvasResizePolicy": 2
-            });
+        // 2. Use the legacy Godot 3 "Manual Load" sequence
+        // We load the WASM first, then the PCK.
+        Promise.all([
+            engine.init(BASE + "index"), // Loads index.wasm
+            engine.preloadFile(BASE + "index.pck") // Loads index.pck
+        ]).then(() => {
+            status.innerText = "STARTING SYSTEM...";
+            return engine.start("--main-pack", BASE + "index.pck");
         }).then(() => {
             document.getElementById('inner-loading').style.display = 'none';
         }).catch(err => {
-            console.error("Critical Failure:", err);
-            // Last-second fallback if the above fails
+            console.error("Manual Boot failure:", err);
+            // Absolute emergency fallback
             engine.startGame(BASE + "index.pck");
         });
       }
