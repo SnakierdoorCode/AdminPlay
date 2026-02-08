@@ -6,7 +6,7 @@
     <style type="text/css">
       body { margin: 0; background-color: #050505; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; font-family: 'Segoe UI', sans-serif; background-image: radial-gradient(white, rgba(255,255,255,.3) 1px, transparent 20px), radial-gradient(white, rgba(255,255,255,.2) 1px, transparent 30px); background-size: 400px 400px, 250px 250px; animation: spaceFly 40s linear infinite; }
       @keyframes spaceFly { from { background-position: 0 0, 0 0; } to { background-position: 400px 800px, 250px 500px; } }
-      #game-wrapper { position: relative; width: 960px; height: 540px; border: 2px solid #4ade80; border-radius: 12px; background: #000; box-shadow: 0 0 40px rgba(74, 222, 128, 0.2); overflow: hidden; }
+      #game-wrapper { position: relative; width: 960px; height: 540px; border: 2px solid #4ade80; border-radius: 12px; background: #000; box-shadow: 0 0 40px rgba(74, 222, 128, 0.2); overflow: hidden; z-index: 5; }
       #canvas { width: 100% !important; height: 100% !important; display: block; outline: none; }
       #inner-loading { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 20; }
       .loader-pulse { width: 60px; height: 60px; border: 3px solid rgba(74, 222, 128, 0.1); border-radius: 50%; border-top-color: #4ade80; animation: spin 1s ease-in-out infinite; }
@@ -15,8 +15,9 @@
       .modal-content { background: rgba(10, 20, 10, 0.95); color: white; padding: 60px; border-radius: 40px; border: 1px solid #4ade80; text-align: center; }
       button { background: transparent; color: #4ade80; border: 2px solid #4ade80; padding: 20px 60px; font-weight: 900; border-radius: 50px; cursor: pointer; text-transform: uppercase; transition: 0.4s; }
       button:hover:not(:disabled) { background: #4ade80; color: #000; box-shadow: 0 0 30px #4ade80; }
-      .tag { position: absolute; bottom: 10px; right: 15px; color: rgba(74, 222, 128, 0.4); font-size: 10px; font-weight: bold; }
+      button:disabled { opacity: 0.4; cursor: wait; }
     </style>
+    
     <script src="https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/index.js"></script>
   </head>
   <body>
@@ -32,10 +33,9 @@
     <div id="game-wrapper">
         <div id="inner-loading">
           <div class="loader-pulse"></div>
-          <p style="color: #4ade80; margin-top: 20px; font-weight: bold; letter-spacing: 2px; font-size: 11px;">SYNCHRONIZING CORE DATA...</p>
+          <p style="color: #4ade80; margin-top: 20px; font-weight: bold; letter-spacing: 2px; font-size: 11px;">INITIALIZING DATA STREAM...</p>
         </div>
         <canvas id="canvas"></canvas>
-        <div class="tag">DAMIEN / SNAKIERDOOR</div>
     </div>
 
     <script>
@@ -43,31 +43,25 @@
         document.getElementById('port-modal').style.display = 'none';
         document.getElementById('inner-loading').style.display = 'flex';
         
+        // 1. DEFINE THE BASE URL
         const BASE = "https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/";
 
-        // Correct Godot 3 Web Export Initialization
-        const GODOT_CONFIG = {
+        // 2. CONFIGURE THE ENGINE WITH THE WASM PATH (String only!)
+        // We set 'executable' to the base URL + 'index'. Godot automatically adds '.wasm' to this string.
+        const engine = new Engine({
             "args": [],
             "canvasResizePolicy": 2,
-            "executable": "index",
-            "mainPack": "index.pck",
-            "basePath": BASE,
-        };
+            "executable": BASE + "index", 
+            "fileSizes": { "index.pck": 1000000, "index.wasm": 17462058 }
+        });
 
-        const engine = new Engine(GODOT_CONFIG);
-
-        // We launch by explicitly passing the PCK path to the engine
-        engine.startGame({
-            "onProgress": function (current, total) {
-                if (total > 0) {
-                    console.log("Loading: " + (current / total * 100).toFixed(2) + "%");
-                }
-            }
-        }).then(() => {
+        // 3. START THE GAME WITH THE PCK PATH (String only!)
+        // We do NOT pass an object here. We pass the direct link to the .pck file.
+        engine.startGame(BASE + "index.pck").then(() => {
             document.getElementById('inner-loading').style.display = 'none';
         }).catch(err => {
-            console.error("Critical Boot Failure:", err);
-            // Last ditch effort: try relative path if absolute fails
+            console.error("Boot Error:", err);
+            // If the CDN fails, try loading locally
             engine.startGame("index.pck");
         });
       }
