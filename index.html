@@ -14,9 +14,9 @@
       #port-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
       .modal-content { background: rgba(10, 20, 10, 0.95); color: white; padding: 60px; border-radius: 40px; border: 1px solid #4ade80; text-align: center; }
       button { background: transparent; color: #4ade80; border: 2px solid #4ade80; padding: 20px 60px; font-weight: 900; border-radius: 50px; cursor: pointer; text-transform: uppercase; transition: 0.4s; }
-      button:hover:not(:disabled) { background: #4ade80; color: #000; box-shadow: 0 0 30px #4ade80; }
-      .tag { position: absolute; bottom: 10px; right: 15px; color: rgba(74, 222, 128, 0.4); font-size: 10px; font-weight: bold; }
+      button:hover { background: #4ade80; color: #000; box-shadow: 0 0 30px #4ade80; }
     </style>
+    
     <script src="https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/index.js"></script>
   </head>
   <body>
@@ -25,44 +25,46 @@
       <div class="modal-content">
         <h1>ADMIN PLAY</h1>
         <p>System Port by <b>Damien / Snakierdoor</b></p>
-        <button id="start-btn" onclick="startLoading()">LAUNCH ADMIN</button>
+        <button onclick="startLoading()">LAUNCH ADMIN</button>
       </div>
     </div>
 
     <div id="game-wrapper">
         <div id="inner-loading">
-          <div class="loader-pulse"></div>
-          <p id="status-text" style="color: #4ade80; margin-top: 20px; font-weight: bold; letter-spacing: 2px; font-size: 11px;">LOADING ENGINE...</p>
+            <div class="loader-pulse"></div>
+            <p style="color: #4ade80; margin-top: 20px; font-weight: bold; font-size: 11px;">SYNCHRONIZING REPOSITORY...</p>
         </div>
         <canvas id="canvas"></canvas>
-        <div class="tag">DAMIEN / SNAKIERDOOR</div>
     </div>
 
     <script>
       function startLoading() {
         document.getElementById('port-modal').style.display = 'none';
         document.getElementById('inner-loading').style.display = 'flex';
-        const status = document.getElementById('status-text');
         
-        const BASE = "https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/";
+        const BASE_URL = "https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/";
 
-        // 1. Create the engine instance
-        const engine = new Engine();
+        // Based on your JS file, we need to provide a custom 'locateFile' function.
+        // This solves the ".wasm" 404 error by forcing the full URL for every file.
+        const config = {
+          canvas: document.getElementById('canvas'),
+          locateFile: function(path) {
+            // This forces the engine to look at your GitHub for ALL files
+            if (path.endsWith('.wasm')) return BASE_URL + "index.wasm";
+            if (path.endsWith('.pck')) return BASE_URL + "index.pck";
+            return BASE_URL + path;
+          },
+        };
 
-        // 2. Use the legacy Godot 3 "Manual Load" sequence
-        // We load the WASM first, then the PCK.
-        Promise.all([
-            engine.init(BASE + "index"), // Loads index.wasm
-            engine.preloadFile(BASE + "index.pck") // Loads index.pck
-        ]).then(() => {
-            status.innerText = "STARTING SYSTEM...";
-            return engine.start("--main-pack", BASE + "index.pck");
-        }).then(() => {
-            document.getElementById('inner-loading').style.display = 'none';
+        const engine = new Engine(config);
+
+        // We use the absolute path to the PCK here
+        engine.startGame(BASE_URL + "index.pck").then(() => {
+          document.getElementById('inner-loading').style.display = 'none';
         }).catch(err => {
-            console.error("Manual Boot failure:", err);
-            // Absolute emergency fallback
-            engine.startGame(BASE + "index.pck");
+          console.error("Boot failure:", err);
+          // Fallback if GitHub CDN is acting up
+          engine.startGame("index.pck");
         });
       }
     </script>
