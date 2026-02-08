@@ -1,75 +1,179 @@
 <!DOCTYPE html>
 <html lang="en-us">
-<head>
+  <head>
     <meta charset="utf-8">
-    <title>AdminPlay Port | Fixed</title>
-    <style>
-        body { margin: 0; background: #000; color: #4ade80; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: monospace; }
-        #game-wrapper { position: relative; width: 960px; height: 540px; border: 1px solid #4ade80; }
-        canvas { width: 100%; height: 100%; display: block; }
-        #overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; }
-        button { border: 2px solid #4ade80; background: none; color: #4ade80; padding: 10px 20px; cursor: pointer; font-family: monospace; }
-        #status { margin-top: 10px; font-size: 12px; }
+    <title>AdminPlay | Ported by Damien</title>
+    <style type="text/css">
+      /* YOUR CUSTOM SPACE CSS */
+      body { 
+        margin: 0; 
+        background-color: #050505; 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        justify-content: center; 
+        height: 100vh; 
+        overflow: hidden; 
+        font-family: 'Segoe UI', sans-serif; 
+        background-image: radial-gradient(white, rgba(255,255,255,.3) 1px, transparent 20px), radial-gradient(white, rgba(255,255,255,.2) 1px, transparent 30px); 
+        background-size: 400px 400px, 250px 250px; 
+        animation: spaceFly 40s linear infinite; 
+      }
+      
+      @keyframes spaceFly { 
+        from { background-position: 0 0, 0 0; } 
+        to { background-position: 400px 800px, 250px 500px; } 
+      }
+      
+      #game-wrapper { 
+        position: relative; 
+        width: 960px; 
+        height: 540px; 
+        border: 2px solid #4ade80; 
+        border-radius: 12px; 
+        background: #000; 
+        box-shadow: 0 0 40px rgba(74, 222, 128, 0.2); 
+        overflow: hidden; 
+        z-index: 5; 
+      }
+      
+      #canvas { 
+        width: 100% !important; 
+        height: 100% !important; 
+        display: block; 
+        outline: none; 
+      }
+      
+      #inner-loading { 
+        position: absolute; 
+        top: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 100%; 
+        background: #000; 
+        display: none; 
+        flex-direction: column; 
+        align-items: center; 
+        justify-content: center; 
+        z-index: 20; 
+      }
+      
+      .loader-pulse { 
+        width: 60px; 
+        height: 60px; 
+        border: 3px solid rgba(74, 222, 128, 0.1); 
+        border-radius: 50%; 
+        border-top-color: #4ade80; 
+        animation: spin 1s ease-in-out infinite; 
+      }
+      
+      @keyframes spin { to { transform: rotate(360deg); } }
+      
+      #port-modal { 
+        position: fixed; 
+        top: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 100%; 
+        background: rgba(0,0,0,0.92); 
+        backdrop-filter: blur(8px); 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        z-index: 1000; 
+      }
+      
+      .modal-content { 
+        background: rgba(10, 20, 10, 0.95); 
+        color: white; 
+        padding: 60px; 
+        border-radius: 40px; 
+        border: 1px solid #4ade80; 
+        text-align: center; 
+      }
+      
+      button { 
+        background: transparent; 
+        color: #4ade80; 
+        border: 2px solid #4ade80; 
+        padding: 20px 60px; 
+        font-weight: 900; 
+        border-radius: 50px; 
+        cursor: pointer; 
+        text-transform: uppercase; 
+        transition: 0.4s; 
+      }
+      
+      button:hover:not(:disabled) { 
+        background: #4ade80; 
+        color: #000; 
+        box-shadow: 0 0 30px #4ade80; 
+      }
+      
+      button:disabled { opacity: 0.4; cursor: wait; }
+      
+      .game-corner-tag { 
+        position: absolute; 
+        bottom: 10px; 
+        right: 15px; 
+        color: rgba(74, 222, 128, 0.4); 
+        font-size: 10px; 
+        font-weight: bold; 
+        pointer-events: none; 
+      }
     </style>
-</head>
-<body>
+    
+    <script src="https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/index.js"></script>
+  </head>
+  <body>
 
-    <div id="game-wrapper">
-        <canvas id="canvas"></canvas>
-        <div id="overlay">
-            <h1>ADMIN PLAY</h1>
-            <button id="launch-btn">LAUNCH SYSTEM</button>
-            <div id="status">Ready.</div>
-        </div>
+    <div id="port-modal">
+      <div class="modal-content">
+        <h1 style="letter-spacing: 5px;">ADMIN PLAY</h1>
+        <p>System Port by <b>Damien / Snakierdoor</b></p>
+        <button id="start-btn" onclick="startLoading()">LAUNCH ADMIN</button>
+      </div>
     </div>
 
-    <script src="https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/index.js"></script>
+    <div id="game-wrapper">
+        <div id="inner-loading">
+          <div class="loader-pulse"></div>
+          <p id="boot-status" style="color: #4ade80; margin-top: 20px; font-weight: bold; letter-spacing: 2px; font-size: 11px;">INITIALIZING DATA STREAM...</p>
+        </div>
+        <canvas id="canvas"></canvas>
+        <div class="game-corner-tag">DAMIEN / SNAKIERDOOR</div>
+    </div>
 
     <script>
-        const launchBtn = document.getElementById('launch-btn');
-        const status = document.getElementById('status');
-        const REPO = "https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/";
+      function startLoading() {
+        document.getElementById('port-modal').style.display = 'none';
+        document.getElementById('inner-loading').style.display = 'flex';
+        const bootStatus = document.getElementById('boot-status');
+        
+        // 1. RAW CDN LINKS (Required for cross-origin hosting)
+        const BASE = "https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/";
 
-        launchBtn.addEventListener('click', async () => {
-            launchBtn.style.display = 'none';
-            status.innerText = "Connecting...";
-
-            const engine = new Engine({
-                canvas: document.getElementById('canvas'),
-                locateFile: (path) => REPO + path
-            });
-
-            try {
-                // 1. Load WASM
-                status.innerText = "Loading WASM...";
-                await engine.init(REPO + "index");
-
-                // 2. Fetch PCK
-                status.innerText = "Downloading Assets...";
-                const res = await fetch(REPO + "index.pck");
-                const buffer = await res.arrayBuffer();
-
-                // 3. Inject into FS
-                // We use the file name as a plain string to avoid the charCodeAt error
-                status.innerText = "Mounting...";
-                engine.copyToFS("index.pck", buffer);
-
-                // 4. Start - FIXED ARGUMENTS
-                status.innerText = "Booting...";
-                
-                // Instead of passing a complex object, we pass the command-line args
-                // that Godot expects to find its main pack.
-                await engine.start("--main-pack", "index.pck");
-
-                // Success
-                document.getElementById('overlay').style.display = 'none';
-
-            } catch (err) {
-                console.error("Boot Error:", err);
-                status.innerText = "Error: " + err.message;
-                status.style.color = "red";
-            }
+        // 2. CONFIGURE ENGINE
+        const engine = new Engine({
+            "args": [],
+            "canvasResizePolicy": 2,
+            "executable": BASE + "index", // Engine adds .wasm automatically
+            "fileSizes": { "index.pck": 1000000, "index.wasm": 17462058 }
         });
+
+        // 3. LAUNCH GAME
+        // This method bypasses the charCodeAt error by providing the PCK as a clean string link
+        engine.startGame(BASE + "index.pck").then(() => {
+            console.log("Game loaded successfully");
+            document.getElementById('inner-loading').style.display = 'none';
+        }).catch(err => {
+            console.error("Boot Error:", err);
+            bootStatus.innerText = "FAILED TO CONNECT TO STREAM. TRYING LOCAL FALLBACK...";
+            
+            // Local fallback if CDN is blocked
+            engine.startGame("index.pck");
+        });
+      }
     </script>
-</body>
+  </body>
 </html>
