@@ -33,7 +33,7 @@
     <div id="game-wrapper">
         <div id="inner-loading">
           <div class="loader-pulse"></div>
-          <p style="color: #4ade80; margin-top: 20px; font-weight: bold; letter-spacing: 2px; font-size: 11px;">ESTABLISHING BASE LINK...</p>
+          <p style="color: #4ade80; margin-top: 20px; font-weight: bold; letter-spacing: 2px; font-size: 11px;">FORCING UPLINK...</p>
         </div>
         <canvas id="canvas"></canvas>
         <div class="tag">DAMIEN / SNAKIERDOOR</div>
@@ -44,23 +44,25 @@
         document.getElementById('port-modal').style.display = 'none';
         document.getElementById('inner-loading').style.display = 'flex';
         
-        // This is the "Base Link" the engine is asking for
         const BASE = "https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/";
 
-        const engine = new Engine({
-            "args": ["--main-pack", BASE + "index.pck"],
-            "canvasResizePolicy": 2,
-            "executable": BASE + "index", // Engine will find index.wasm here
-            "basePath": BASE             // <--- THIS IS THE FIX
-        });
+        // Initialize the engine first
+        const engine = new Engine();
 
-        // We leave startGame empty so it uses the 'basePath' and 'executable' from above
-        engine.startGame().then(() => {
+        // We use the 'init' method explicitly before starting, 
+        // as your error log mentions 'init' is failing.
+        engine.init(BASE).then(() => {
+            return engine.startGame({
+                "executable": BASE + "index",
+                "mainPack": BASE + "index.pck",
+                "canvasResizePolicy": 2,
+            });
+        }).then(() => {
             document.getElementById('inner-loading').style.display = 'none';
         }).catch(err => {
-            console.error("Boot Error:", err);
-            // Emergency fallback if BASE fails
-            engine.startGame("index.pck");
+            console.error("Critical Failure:", err);
+            // Fallback for older index.js versions
+            engine.startGame(BASE + "index.pck");
         });
       }
     </script>
