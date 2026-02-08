@@ -2,96 +2,74 @@
 <html lang="en-us">
 <head>
     <meta charset="utf-8">
-    <title>AdminPlay Port | Damien</title>
+    <title>AdminPlay Port | Fixed</title>
     <style>
-        body { margin: 0; background: #000; color: #4ade80; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: monospace; }
-        #game-wrapper { position: relative; width: 960px; height: 540px; border: 2px solid #4ade80; }
+        body { margin: 0; background: #000; color: #4ade80; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: monospace; }
+        #game-wrapper { position: relative; width: 960px; height: 540px; border: 1px solid #4ade80; }
         canvas { width: 100%; height: 100%; display: block; }
-        #status-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .btn { border: 2px solid #4ade80; padding: 15px 30px; cursor: pointer; background: none; color: #4ade80; font-weight: bold; }
-        .btn:hover { background: #4ade80; color: #000; }
+        #overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; }
+        button { border: 2px solid #4ade80; background: none; color: #4ade80; padding: 10px 20px; cursor: pointer; font-family: monospace; }
+        #status { margin-top: 10px; font-size: 12px; }
     </style>
 </head>
 <body>
 
     <div id="game-wrapper">
         <canvas id="canvas"></canvas>
-        <div id="status-overlay">
-            <h1 id="title">ADMIN PLAY</h1>
-            <button class="btn" id="start-node">RUN SYSTEM</button>
-            <p id="msg"></p>
+        <div id="overlay">
+            <h1>ADMIN PLAY</h1>
+            <button id="launch-btn">LAUNCH SYSTEM</button>
+            <div id="status">Ready.</div>
         </div>
     </div>
 
+    <script src="https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/index.js"></script>
+
     <script>
-        // THE LINKS - Directly pointing to your repository files
-        const REPO_BASE = "https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/";
-        const JS_URL = REPO_BASE + "index.js";
-        const WASM_URL = REPO_BASE + "index.wasm";
-        const PCK_URL = REPO_BASE + "index.pck";
+        const launchBtn = document.getElementById('launch-btn');
+        const status = document.getElementById('status');
+        const REPO = "https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/";
 
-        const msg = document.getElementById('msg');
-        const startBtn = document.getElementById('start-node');
+        launchBtn.addEventListener('click', async () => {
+            launchBtn.style.display = 'none';
+            status.innerText = "Connecting...";
 
-        startBtn.addEventListener('click', () => {
-            startBtn.style.display = 'none';
-            loadEngine();
-        });
+            const engine = new Engine({
+                canvas: document.getElementById('canvas'),
+                locateFile: (path) => REPO + path
+            });
 
-        function loadEngine() {
-            msg.innerText = "PHASE 1: Fetching Loader...";
-            
-            // Step 1: Inject the JS file into the page
-            const script = document.createElement("script");
-            script.src = JS_URL;
-            
-            script.onload = async () => {
-                msg.innerText = "PHASE 2: Initializing WASM Core...";
+            try {
+                // 1. Load WASM
+                status.innerText = "Loading WASM...";
+                await engine.init(REPO + "index");
+
+                // 2. Fetch PCK
+                status.innerText = "Downloading Assets...";
+                const res = await fetch(REPO + "index.pck");
+                const buffer = await res.arrayBuffer();
+
+                // 3. Inject into FS
+                // We use the file name as a plain string to avoid the charCodeAt error
+                status.innerText = "Mounting...";
+                engine.copyToFS("index.pck", buffer);
+
+                // 4. Start - FIXED ARGUMENTS
+                status.innerText = "Booting...";
                 
-                // Initialize the Godot Engine
-                const engine = new Engine({
-                    canvas: document.getElementById('canvas'),
-                    // This tells the engine exactly where to find the .wasm file
-                    locateFile: (path) => {
-                        if (path.endsWith('.wasm')) return WASM_URL;
-                        return REPO_BASE + path;
-                    }
-                });
+                // Instead of passing a complex object, we pass the command-line args
+                // that Godot expects to find its main pack.
+                await engine.start("--main-pack", "index.pck");
 
-                try {
-                    // Start the engine core
-                    await engine.init(REPO_BASE + "index");
+                // Success
+                document.getElementById('overlay').style.display = 'none';
 
-                    msg.innerText = "PHASE 3: Downloading Game Assets...";
-                    // Step 2: Manually fetch the PCK file (The game data)
-                    const response = await fetch(PCK_URL);
-                    if (!response.ok) throw new Error("Could not reach index.pck");
-                    const arrayBuffer = await response.arrayBuffer();
-
-                    msg.innerText = "PHASE 4: Booting Filesystem...";
-                    // Use the function from your index.js to "inject" the pck
-                    engine.copyToFS("index.pck", arrayBuffer);
-
-                    // Step 3: Launch
-                    msg.innerText = "SYSTEM ONLINE";
-                    await engine.start(["--main-pack", "index.pck"]);
-                    
-                    // Hide the overlay when the game starts
-                    document.getElementById('status-overlay').style.display = 'none';
-
-                } catch (err) {
-                    console.error(err);
-                    msg.innerText = "CRITICAL FAILURE: " + err.message;
-                    msg.style.color = "red";
-                }
-            };
-
-            script.onerror = () => {
-                msg.innerText = "FAILED TO LOAD index.js. Check GitHub links.";
-            };
-
-            document.body.appendChild(script);
-        }
+            } catch (err) {
+                console.error("Boot Error:", err);
+                status.innerText = "Error: " + err.message;
+                status.style.color = "red";
+            }
+        });
     </script>
 </body>
 </html>
