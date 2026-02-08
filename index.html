@@ -4,17 +4,92 @@
     <meta charset="utf-8">
     <title>AdminPlay | Ported by Damien</title>
     <style type="text/css">
-      body { margin: 0; background-color: #050505; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; font-family: 'Segoe UI', sans-serif; background-image: radial-gradient(white, rgba(255,255,255,.3) 1px, transparent 20px), radial-gradient(white, rgba(255,255,255,.2) 1px, transparent 30px); background-size: 400px 400px, 250px 250px; animation: spaceFly 40s linear infinite; }
+      body { 
+        margin: 0; 
+        background-color: #050505; 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+        justify-content: center; 
+        height: 100vh; 
+        overflow: hidden; 
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        background-image: radial-gradient(white, rgba(255,255,255,.3) 1px, transparent 20px), radial-gradient(white, rgba(255,255,255,.2) 1px, transparent 30px); 
+        background-size: 400px 400px, 250px 250px; 
+        animation: spaceFly 40s linear infinite; 
+      }
       @keyframes spaceFly { from { background-position: 0 0, 0 0; } to { background-position: 400px 800px, 250px 500px; } }
-      #game-wrapper { position: relative; width: 960px; height: 540px; border: 2px solid #4ade80; border-radius: 12px; background: #000; box-shadow: 0 0 40px rgba(74, 222, 128, 0.2); overflow: hidden; z-index: 5; }
+      
+      #game-wrapper { 
+        position: relative; 
+        width: 960px; 
+        height: 540px; 
+        border: 2px solid #4ade80; 
+        border-radius: 12px; 
+        background: #000; 
+        box-shadow: 0 0 40px rgba(74, 222, 128, 0.2); 
+        overflow: hidden; 
+        z-index: 5; 
+      }
       #canvas { width: 100% !important; height: 100% !important; display: block; outline: none; }
-      #inner-loading { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 20; }
-      .loader-pulse { width: 60px; height: 60px; border: 3px solid rgba(74, 222, 128, 0.1); border-radius: 50%; border-top-color: #4ade80; animation: spin 1s ease-in-out infinite; }
+      
+      #inner-loading { 
+        position: absolute; 
+        top: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 100%; 
+        background: #000; 
+        display: none; 
+        flex-direction: column; 
+        align-items: center; 
+        justify-content: center; 
+        z-index: 20; 
+      }
+      .loader-pulse { 
+        width: 60px; 
+        height: 60px; 
+        border: 3px solid rgba(74, 222, 128, 0.1); 
+        border-radius: 50%; 
+        border-top-color: #4ade80; 
+        animation: spin 1s ease-in-out infinite; 
+      }
       @keyframes spin { to { transform: rotate(360deg); } }
-      #port-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-      .modal-content { background: rgba(10, 20, 10, 0.95); color: white; padding: 60px; border-radius: 40px; border: 1px solid #4ade80; text-align: center; }
-      button { background: transparent; color: #4ade80; border: 2px solid #4ade80; padding: 20px 60px; font-weight: 900; border-radius: 50px; cursor: pointer; text-transform: uppercase; transition: 0.4s; }
+      
+      #port-modal { 
+        position: fixed; 
+        top: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 100%; 
+        background: rgba(0,0,0,0.92); 
+        backdrop-filter: blur(8px); 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        z-index: 1000; 
+      }
+      .modal-content { 
+        background: rgba(10, 20, 10, 0.95); 
+        color: white; 
+        padding: 60px; 
+        border-radius: 40px; 
+        border: 1px solid #4ade80; 
+        text-align: center; 
+      }
+      button { 
+        background: transparent; 
+        color: #4ade80; 
+        border: 2px solid #4ade80; 
+        padding: 20px 60px; 
+        font-weight: 900; 
+        border-radius: 50px; 
+        cursor: pointer; 
+        text-transform: uppercase; 
+        transition: 0.4s; 
+      }
       button:hover { background: #4ade80; color: #000; box-shadow: 0 0 30px #4ade80; }
+      .tag { position: absolute; bottom: 10px; right: 15px; color: rgba(74, 222, 128, 0.4); font-size: 10px; font-weight: bold; }
     </style>
     
     <script src="https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/index.js"></script>
@@ -31,41 +106,59 @@
 
     <div id="game-wrapper">
         <div id="inner-loading">
-            <div class="loader-pulse"></div>
-            <p style="color: #4ade80; margin-top: 20px; font-weight: bold; font-size: 11px;">SYNCHRONIZING REPOSITORY...</p>
+          <div class="loader-pulse"></div>
+          <p id="status-text" style="color: #4ade80; margin-top: 20px; font-weight: bold; letter-spacing: 2px; font-size: 11px; font-family: monospace;">CONNECTING...</p>
         </div>
         <canvas id="canvas"></canvas>
+        <div class="tag">DAMIEN / SNAKIERDOOR</div>
     </div>
 
     <script>
       function startLoading() {
+        // UI Logic
         document.getElementById('port-modal').style.display = 'none';
         document.getElementById('inner-loading').style.display = 'flex';
+        const status = document.getElementById('status-text');
         
+        // Configuration Constants
         const BASE_URL = "https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/";
 
-        // Based on your JS file, we need to provide a custom 'locateFile' function.
-        // This solves the ".wasm" 404 error by forcing the full URL for every file.
-        const config = {
+        // 1. Initialize Engine with manual file mapping
+        const engine = new Engine({
           canvas: document.getElementById('canvas'),
           locateFile: function(path) {
-            // This forces the engine to look at your GitHub for ALL files
             if (path.endsWith('.wasm')) return BASE_URL + "index.wasm";
             if (path.endsWith('.pck')) return BASE_URL + "index.pck";
             return BASE_URL + path;
-          },
-        };
-
-        const engine = new Engine(config);
-
-        // We use the absolute path to the PCK here
-        engine.startGame(BASE_URL + "index.pck").then(() => {
-          document.getElementById('inner-loading').style.display = 'none';
-        }).catch(err => {
-          console.error("Boot failure:", err);
-          // Fallback if GitHub CDN is acting up
-          engine.startGame("index.pck");
+          }
         });
+
+        // 2. The Low-Level Execution Chain
+        status.innerText = "LOADING WASM ENGINE...";
+        
+        // We initialize with the base name (index) so it fetches index.wasm
+        engine.init(BASE_URL + "index")
+          .then(() => {
+            status.innerText = "PRELOADING GAME DATA (PCK)...";
+            // Manually inject the PCK into the engine's virtual memory
+            return engine.preloadFile(BASE_URL + "index.pck");
+          })
+          .then(() => {
+            status.innerText = "BOOTING KERNEL...";
+            // Start the engine using the file we just preloaded
+            // We pass the PCK as an argument to ensure it's selected as the main pack
+            return engine.start("--main-pack", "index.pck");
+          })
+          .then(() => {
+            // Finalize
+            status.innerText = "SUCCESS";
+            document.getElementById('inner-loading').style.display = 'none';
+          })
+          .catch((err) => {
+            console.error("Critical Failure in Loading Chain:", err);
+            status.innerText = "BOOT FAILED. SEE CONSOLE.";
+            status.style.color = "#ff4444";
+          });
       }
     </script>
   </body>
