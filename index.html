@@ -15,7 +15,7 @@
       .modal-content { background: rgba(10, 20, 10, 0.95); color: white; padding: 60px; border-radius: 40px; border: 1px solid #4ade80; text-align: center; }
       button { background: transparent; color: #4ade80; border: 2px solid #4ade80; padding: 20px 60px; font-weight: 900; border-radius: 50px; cursor: pointer; text-transform: uppercase; transition: 0.4s; }
       button:hover:not(:disabled) { background: #4ade80; color: #000; box-shadow: 0 0 30px #4ade80; }
-      .game-corner-tag { position: absolute; bottom: 10px; right: 15px; color: rgba(74, 222, 128, 0.4); font-size: 10px; font-weight: bold; pointer-events: none; }
+      .tag { position: absolute; bottom: 10px; right: 15px; color: rgba(74, 222, 128, 0.4); font-size: 10px; font-weight: bold; }
     </style>
     
     <script src="https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/index.js"></script>
@@ -33,10 +33,10 @@
     <div id="game-wrapper">
         <div id="inner-loading">
           <div class="loader-pulse"></div>
-          <p style="color: #4ade80; margin-top: 20px; font-weight: bold; letter-spacing: 2px; font-size: 11px;">SYNCING WASM & PCK DATA...</p>
+          <p style="color: #4ade80; margin-top: 20px; font-weight: bold; letter-spacing: 2px; font-size: 11px;">ESTABLISHING BASE LINK...</p>
         </div>
         <canvas id="canvas"></canvas>
-        <div class="game-corner-tag">DAMIEN / SNAKIERDOOR</div>
+        <div class="tag">DAMIEN / SNAKIERDOOR</div>
     </div>
 
     <script>
@@ -44,29 +44,23 @@
         document.getElementById('port-modal').style.display = 'none';
         document.getElementById('inner-loading').style.display = 'flex';
         
+        // This is the "Base Link" the engine is asking for
         const BASE = "https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/";
 
         const engine = new Engine({
-            // 1. Tell it exactly where the WASM is (No auto-guessing!)
-            "executable": BASE + "index", 
-            
-            // 2. Pass the PCK location as a command line argument
-            // This bypasses the loader's attempt to merge the names.
             "args": ["--main-pack", BASE + "index.pck"],
-            
             "canvasResizePolicy": 2,
-            "fileSizes": { "index.pck": 1000000, "index.wasm": 17462058 }
+            "executable": BASE + "index", // Engine will find index.wasm here
+            "basePath": BASE             // <--- THIS IS THE FIX
         });
 
-        // 3. CRITICAL: Leave this EMPTY. 
-        // We do not pass the path here, or it overrides our work above.
+        // We leave startGame empty so it uses the 'basePath' and 'executable' from above
         engine.startGame().then(() => {
             document.getElementById('inner-loading').style.display = 'none';
         }).catch(err => {
             console.error("Boot Error:", err);
-            // If that fails, we try the simple relative path as a fallback
-            // (Only works if files are in the same folder on the server)
-            engine.startGame("index.pck"); 
+            // Emergency fallback if BASE fails
+            engine.startGame("index.pck");
         });
       }
     </script>
