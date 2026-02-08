@@ -1,24 +1,26 @@
 <html lang="en-us">
 <head>
     <meta charset="utf-8">
-    <title>Office System | Secured</title>
+    <title>Office System | Clean Port</title>
     <style>
         :root {
             --office-blue: #0078d4;
             --glow-blue: #4db2ff;
-            --dark-ui: #1b1b1b;
             --deep-bg: #0d0d0d;
+            --ui-gray: #333;
         }
 
         body { 
             margin: 0; 
             background-color: var(--deep-bg); 
             display: flex; 
+            flex-direction: column; 
             align-items: center; 
             justify-content: center; 
             height: 100vh; 
             overflow: hidden; 
             font-family: 'Segoe UI', system-ui, sans-serif;
+            /* Subfloor Grid Animation */
             background-image: 
                 linear-gradient(rgba(0, 120, 212, 0.05) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(0, 120, 212, 0.05) 1px, transparent 1px);
@@ -31,70 +33,91 @@
             to { background-position: 600px 600px; }
         }
 
+        /* THE PURE GAME FRAME */
         #game-wrapper { 
             position: relative; 
             width: 960px; 
             height: 540px; 
-            border: 1px solid #333; 
+            border: 1px solid var(--ui-gray); 
             background: #000; 
-            box-shadow: 0 30px 60px rgba(0,0,0,0.8); 
+            box-shadow: 0 40px 80px rgba(0,0,0,0.9); 
             z-index: 5;
         }
 
+        /* Fullscreen state - removes borders/external UI */
         #game-wrapper:fullscreen {
             width: 100vw;
             height: 100vh;
+            border: none;
         }
 
         canvas { 
             width: 100% !important; 
             height: 100% !important; 
             display: block; 
-            image-rendering: pixelated; /* Sharpest possible rendering */
+            image-rendering: pixelated; 
         }
 
-        /* THE ABSOLUTE BOTTOM RIGHT TAG */
-        .security-tag {
+        /* EXTERNAL FULLSCREEN BUTTON (Under the game) */
+        #external-controls {
+            margin-top: 20px;
+            z-index: 10;
+        }
+
+        .fs-toggle {
+            background: transparent;
+            border: 1px solid var(--ui-gray);
+            color: #666;
+            padding: 8px 24px;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: 0.3s;
+            text-transform: uppercase;
+        }
+
+        .fs-toggle:hover {
+            border-color: var(--office-blue);
+            color: var(--glow-blue);
+            background: rgba(0, 120, 212, 0.05);
+            box-shadow: 0 0 15px rgba(0, 120, 212, 0.2);
+        }
+
+        /* ABSOLUTE EXTERNAL TAG (Bottom Right of screen) */
+        .external-tag {
             position: absolute;
-            bottom: 15px;
-            right: 15px;
+            bottom: 30px;
+            right: 40px;
             text-align: right;
             pointer-events: none;
-            z-index: 999; /* Stays above everything */
-            opacity: 0.6;
-            transition: opacity 0.3s;
+            z-index: 1;
         }
 
-        .security-tag:hover { opacity: 1; }
-
-        .tag-label {
+        .tag-sub {
             display: block;
             font-family: monospace;
-            font-size: 8px;
-            color: #555;
-            letter-spacing: 1px;
-            margin-bottom: -2px;
-        }
-
-        .tag-name {
-            font-weight: 900;
-            font-size: 11px;
-            color: var(--glow-blue);
+            font-size: 9px;
+            color: #333;
             letter-spacing: 2px;
-            text-shadow: 0 0 8px rgba(77, 178, 255, 0.3);
-            animation: pulse 4s ease-in-out infinite;
+            margin-bottom: 2px;
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 0.5; filter: blur(0px); }
-            50% { opacity: 1; filter: blur(0.2px); }
+        .tag-main {
+            font-weight: 900;
+            font-size: 14px;
+            color: rgba(77, 178, 255, 0.4);
+            letter-spacing: 3px;
+            text-transform: uppercase;
         }
 
+        /* LOADING OVERLAY */
         #overlay { 
             position: absolute; 
             inset: 0; 
-            background: rgba(10, 10, 10, 0.8); 
-            backdrop-filter: blur(20px); 
+            background: rgba(10, 10, 10, 0.85); 
+            backdrop-filter: blur(25px); 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
@@ -102,41 +125,26 @@
             z-index: 1000; 
         }
 
-        .office-card {
-            background: var(--dark-ui);
-            padding: 45px;
-            border: 1px solid #333;
+        .login-card {
             text-align: center;
+            border-left: 2px solid var(--office-blue);
+            padding-left: 30px;
         }
 
-        h1 { font-size: 1.5rem; margin: 0; font-weight: 300; letter-spacing: 8px; color: var(--office-blue); }
+        h1 { font-size: 1.4rem; margin: 0; font-weight: 300; letter-spacing: 10px; color: var(--office-blue); }
         
-        .ui-btn { 
+        .launch-btn { 
             background: var(--office-blue); 
             color: white; 
             border: none; 
-            padding: 10px 40px; 
+            padding: 12px 50px; 
             font-weight: 600; 
             cursor: pointer; 
-            text-transform: uppercase;
-            font-size: 12px;
-            margin-top: 25px;
+            margin-top: 30px;
+            letter-spacing: 1px;
         }
 
-        #fs-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid #444;
-            color: #666;
-            padding: 4px 8px;
-            font-size: 8px;
-            z-index: 101;
-            cursor: pointer;
-        }
-
-        #status { margin-top: 15px; color: #444; font-size: 9px; font-family: monospace; }
+        #status { margin-top: 20px; color: #444; font-size: 9px; font-family: monospace; text-transform: uppercase; }
     </style>
 </head>
 <body>
@@ -144,20 +152,22 @@
     <div id="game-wrapper">
         <canvas id="canvas" tabindex="0"></canvas>
         
-        <div class="security-tag">
-            <span class="tag-label">SYSTEM_PORT_BY</span>
-            <span class="tag-name">DAMIEN / SNAKIERDOOR</span>
-        </div>
-
-        <button id="fs-btn" style="display:none;">[ FULLSCREEN ]</button>
-
         <div id="overlay">
-            <div class="office-card">
+            <div class="login-card">
                 <h1>ADMIN PLAY</h1>
-                <button id="launch-btn" class="ui-btn">BOOT SESSION</button>
-                <div id="status">ENCRYPTION: AES-256 ACTIVE</div>
+                <button id="launch-btn" class="launch-btn">SIGN IN</button>
+                <div id="status">CONNECTION ENCRYPTED</div>
             </div>
         </div>
+    </div>
+
+    <div id="external-controls">
+        <button id="fs-btn" class="fs-toggle" style="display: none;">[ Expand Session ]</button>
+    </div>
+
+    <div class="external-tag">
+        <span class="tag-sub">SECURE_STATION_ACTIVE</span>
+        <span class="tag-main">DAMIEN / SNAKIERDOOR</span>
     </div>
 
     <script src="https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/index.js"></script>
@@ -168,24 +178,29 @@
         const status = document.getElementById('status');
         const overlay = document.getElementById('overlay');
         const canvas = document.getElementById('canvas');
+        const wrapper = document.getElementById('game-wrapper');
         const REPO = "https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/";
 
-        // HIDPI Sharpness Fix
-        function setRes() {
+        // HiDPI Scaling Fix
+        function initRes() {
             const scale = window.devicePixelRatio || 1;
             canvas.width = 960 * scale;
             canvas.height = 540 * scale;
         }
-        setRes();
+        initRes();
 
+        // Fullscreen Logic
         fsBtn.addEventListener('click', () => {
-            if (!document.fullscreenElement) document.getElementById('game-wrapper').requestFullscreen();
-            else document.exitFullscreen();
+            if (!document.fullscreenElement) {
+                wrapper.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
         });
 
         launchBtn.addEventListener('click', async () => {
             launchBtn.style.display = 'none';
-            status.innerText = "BYPASSING FIREWALL...";
+            status.innerText = "AUTHENTICATING...";
 
             const engine = new Engine({
                 canvas: canvas,
@@ -194,17 +209,20 @@
 
             try {
                 await engine.init(REPO + "index");
-                status.innerText = "STREAMING...";
+                status.innerText = "SYNCING ARCHIVES...";
+                
                 const res = await fetch(REPO + "index.pck");
                 const buffer = await res.arrayBuffer();
                 engine.copyToFS("index.pck", buffer);
+
+                status.innerText = "OPENING PORT...";
                 await engine.start("--main-pack", "index.pck");
 
                 overlay.style.display = 'none';
-                fsBtn.style.display = 'block';
+                fsBtn.style.display = 'inline-block';
 
             } catch (err) {
-                status.innerText = "CRITICAL ERROR";
+                status.innerText = "SESSION REJECTED";
                 launchBtn.style.display = 'block';
             }
         });
