@@ -1,40 +1,55 @@
 <html lang="en-us">
 <head>
     <meta charset="utf-8">
-    <title>Locked | AdminPlay Port</title>
+    <title>Office System | AdminPlay Port</title>
     <style>
-        /* SPACE FLY CSS INTEGRATION */
+        :root {
+            --office-blue: #0078d4;
+            --glass: rgba(255, 255, 255, 0.85);
+            --desk-bg: #f3f2f1;
+        }
+
         body { 
             margin: 0; 
-            background-color: #050505; 
+            background-color: var(--desk-bg); 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             justify-content: center; 
             height: 100vh; 
             overflow: hidden; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-image: radial-gradient(white, rgba(255,255,255,.3) 1px, transparent 20px), radial-gradient(white, rgba(255,255,255,.2) 1px, transparent 30px);
-            background-size: 400px 400px, 250px 250px;
-            animation: spaceFly 40s linear infinite;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            /* Office Floor Plan Grid Effect */
+            background-image: 
+                linear-gradient(rgba(0, 120, 212, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 120, 212, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridScroll 60s linear infinite;
         }
 
-        @keyframes spaceFly {
-            from { background-position: 0 0, 0 0; }
-            to { background-position: 400px 800px, 250px 500px; }
+        @keyframes gridScroll {
+            from { background-position: 0 0; }
+            to { background-position: 500px 500px; }
         }
 
-        /* GAME WRAPPER */
         #game-wrapper { 
             position: relative; 
             width: 960px; 
             height: 540px; 
-            border: 2px solid #4ade80; 
-            border-radius: 12px; 
-            background: #000; 
-            box-shadow: 0 0 40px rgba(74, 222, 128, 0.2); 
-            overflow: hidden; 
+            border: 1px solid #d2d0ce; 
+            border-radius: 8px; 
+            background: #ffffff; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1); 
             z-index: 5;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Fullscreen logic */
+        #game-wrapper:fullscreen {
+            width: 100vw;
+            height: 100vh;
+            border: none;
+            border-radius: 0;
         }
 
         canvas { 
@@ -42,62 +57,105 @@
             height: 100% !important; 
             display: block; 
             outline: none; 
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
         }
 
-        /* MODAL / OVERLAY */
+        /* Office "Login" Overlay */
         #overlay { 
             position: absolute; 
             inset: 0; 
-            background: rgba(0,0,0,0.92); 
-            backdrop-filter: blur(8px); 
+            background: var(--glass); 
+            backdrop-filter: blur(12px); 
             display: flex; 
             flex-direction: column; 
             align-items: center; 
             justify-content: center; 
             z-index: 1000; 
-            color: white;
+            color: #323130;
             text-align: center;
         }
 
-        h1 { font-size: 3rem; margin: 0; letter-spacing: 5px; color: #4ade80; }
-        p { color: #888; margin-bottom: 30px; }
-
-        button { 
-            background: transparent; 
-            color: #4ade80; 
-            border: 2px solid #4ade80; 
-            padding: 20px 60px; 
-            font-weight: 900; 
-            border-radius: 50px; 
-            cursor: pointer; 
-            text-transform: uppercase; 
-            transition: 0.4s; 
-            letter-spacing: 2px;
-            font-family: monospace;
+        .office-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #e1dfdd;
         }
 
-        button:hover { 
-            background: #4ade80; 
-            color: #000; 
-            box-shadow: 0 0 30px #4ade80; 
+        h1 { font-size: 2.2rem; margin: 0; font-weight: 600; color: #201f1e; }
+        p { color: #605e5c; margin-bottom: 25px; font-size: 14px; }
+
+        .ui-btn { 
+            background: var(--office-blue); 
+            color: white; 
+            border: none; 
+            padding: 12px 30px; 
+            font-weight: 600; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            transition: 0.2s; 
+            font-size: 15px;
+        }
+
+        .ui-btn:hover { 
+            background: #106ebe; 
+            box-shadow: 0 4px 8px rgba(0, 120, 212, 0.3); 
+        }
+
+        /* Utility Buttons */
+        #fs-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.8);
+            border: 1px solid #d2d0ce;
+            color: #323130;
+            padding: 6px 12px;
+            font-size: 11px;
+            z-index: 101;
+            border-radius: 4px;
+        }
+
+        .corner-tag {
+            position: absolute;
+            bottom: 15px;
+            left: 20px;
+            color: #a19f9d;
+            font-size: 10px;
+            font-weight: 600;
+            z-index: 101;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         #status { 
-            margin-top: 20px; 
-            font-size: 12px; 
-            color: #4ade80; 
-            font-family: monospace;
-            text-transform: uppercase;
+            margin-top: 15px; 
+            color: var(--office-blue); 
+            font-size: 11px; 
+            font-weight: bold;
         }
 
-        .game-corner-tag { 
-            position: absolute; 
-            bottom: 10px; 
-            right: 15px; 
-            color: rgba(74, 222, 128, 0.4); 
-            font-size: 10px; 
-            font-weight: bold; 
-            pointer-events: none; 
+        /* Animated Loading Bar */
+        .progress-box {
+            width: 200px;
+            height: 4px;
+            background: #edebe9;
+            border-radius: 2px;
+            margin-top: 20px;
+            overflow: hidden;
+            display: none;
+        }
+        .progress-fill {
+            width: 40%;
+            height: 100%;
+            background: var(--office-blue);
+            animation: loading 2s infinite ease-in-out;
+        }
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(250%); }
         }
     </style>
 </head>
@@ -106,12 +164,17 @@
     <div id="game-wrapper">
         <canvas id="canvas" tabindex="0"></canvas>
         
+        <div class="corner-tag">Employee Access: DAMIEN / SNAKIERDOOR</div>
+        <button id="fs-btn" style="display:none;">MAXIMIZE WINDOW</button>
+
         <div id="overlay">
-            <h1>ADMIN PLAY</h1>
-            <p>System Port by <b>Damien / Snakierdoor</b></p>
-            <button id="launch-btn">LAUNCH SYSTEM</button>
-            <div id="status">READY</div>
-            <div class="game-corner-tag">DAMIEN / SNAKIERDOOR</div>
+            <div class="office-card">
+                <h1>AdminPlay</h1>
+                <p>Authorized Personnel Only<br><b>Port by Snakierdoor</b></p>
+                <button id="launch-btn" class="ui-btn">SIGN IN</button>
+                <div id="progress" class="progress-box"><div class="progress-fill"></div></div>
+                <div id="status">IDLE</div>
+            </div>
         </div>
     </div>
 
@@ -119,13 +182,22 @@
 
     <script>
         const launchBtn = document.getElementById('launch-btn');
+        const fsBtn = document.getElementById('fs-btn');
         const status = document.getElementById('status');
         const overlay = document.getElementById('overlay');
+        const wrapper = document.getElementById('game-wrapper');
+        const progress = document.getElementById('progress');
         const REPO = "https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/";
+
+        fsBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) wrapper.requestFullscreen();
+            else document.exitFullscreen();
+        });
 
         launchBtn.addEventListener('click', async () => {
             launchBtn.style.display = 'none';
-            status.innerText = "Connecting...";
+            progress.style.display = 'block';
+            status.innerText = "VERIFYING CREDENTIALS...";
 
             const engine = new Engine({
                 canvas: document.getElementById('canvas'),
@@ -133,31 +205,26 @@
             });
 
             try {
-                // 1. Load WASM
-                status.innerText = "Loading WASM...";
+                status.innerText = "LOADING SYSTEM CORE...";
                 await engine.init(REPO + "index");
 
-                // 2. Fetch PCK
-                status.innerText = "Downloading Assets...";
+                status.innerText = "SYNCING DATA PACKS...";
                 const res = await fetch(REPO + "index.pck");
                 const buffer = await res.arrayBuffer();
 
-                // 3. Inject into FS
-                status.innerText = "Mounting Filesystem...";
                 engine.copyToFS("index.pck", buffer);
 
-                // 4. Start
-                status.innerText = "Booting Engine...";
+                status.innerText = "STARTING SESSION...";
                 await engine.start("--main-pack", "index.pck");
 
-                // Success - Hide the overlay to show the game
                 overlay.style.display = 'none';
+                fsBtn.style.display = 'block';
 
             } catch (err) {
-                console.error("Boot Error:", err);
-                status.innerText = "Error: " + err.message;
-                status.style.color = "red";
-                launchBtn.style.display = 'block'; // Show button again so they can retry
+                console.error(err);
+                status.innerText = "CONNECTION FAILED";
+                launchBtn.style.display = 'block';
+                progress.style.display = 'none';
             }
         });
     </script>
