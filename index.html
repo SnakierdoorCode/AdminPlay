@@ -2,80 +2,96 @@
 <html lang="en-us">
 <head>
     <meta charset="utf-8">
-    <title>AdminPlay Port | Fixed</title>
+    <title>AdminPlay Port | Damien</title>
     <style>
-        body { margin: 0; background: #050505; color: #4ade80; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: monospace; }
-        #game-container { position: relative; width: 960px; height: 540px; border: 2px solid #4ade80; background: #000; }
+        body { margin: 0; background: #000; color: #4ade80; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: monospace; }
+        #game-wrapper { position: relative; width: 960px; height: 540px; border: 2px solid #4ade80; }
         canvas { width: 100%; height: 100%; display: block; }
-        #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; text-align: center; padding: 20px; }
-        button { background: none; border: 2px solid #4ade80; color: #4ade80; padding: 15px 30px; cursor: pointer; font-family: monospace; font-weight: bold; }
-        button:hover { background: #4ade80; color: #000; }
-        #status { margin-top: 15px; color: #888; font-size: 12px; }
+        #status-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .btn { border: 2px solid #4ade80; padding: 15px 30px; cursor: pointer; background: none; color: #4ade80; font-weight: bold; }
+        .btn:hover { background: #4ade80; color: #000; }
     </style>
 </head>
 <body>
 
-    <div id="game-container">
-        <div id="overlay">
-            <h1>ADMIN PLAY</h1>
-            <button id="start-btn">INITIALIZE SYSTEM</button>
-            <div id="status">Checking resources...</div>
-        </div>
+    <div id="game-wrapper">
         <canvas id="canvas"></canvas>
+        <div id="status-overlay">
+            <h1 id="title">ADMIN PLAY</h1>
+            <button class="btn" id="start-node">RUN SYSTEM</button>
+            <p id="msg"></p>
+        </div>
     </div>
 
-    <script src="https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/index.js"></script>
-
     <script>
-        const status = document.getElementById('status');
-        const startBtn = document.getElementById('start-btn');
-        
-        // Ensure this matches your GitHub folder structure EXACTLY
-        const BASE = "https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/";
+        // THE LINKS - Directly pointing to your repository files
+        const REPO_BASE = "https://rawcdn.githack.com/SnakierdoorCode/AdminPlay/main/";
+        const JS_URL = REPO_BASE + "index.js";
+        const WASM_URL = REPO_BASE + "index.wasm";
+        const PCK_URL = REPO_BASE + "index.pck";
 
-        startBtn.addEventListener('click', async () => {
+        const msg = document.getElementById('msg');
+        const startBtn = document.getElementById('start-node');
+
+        startBtn.addEventListener('click', () => {
             startBtn.style.display = 'none';
-            status.innerText = "Connecting to Engine...";
-
-            if (typeof Engine === 'undefined') {
-                status.innerText = "ERROR: index.js not found (404). Check GitHub file name.";
-                return;
-            }
-
-            const engine = new Engine({
-                canvas: document.getElementById('canvas'),
-                // This tells the engine where to find the .wasm and .pck files
-                locateFile: (path) => {
-                    console.log("Engine requesting:", path);
-                    return BASE + path;
-                }
-            });
-
-            try {
-                status.innerText = "Loading WASM core...";
-                // We point to the prefix, the engine adds .wasm automatically
-                await engine.init(BASE + "index");
-
-                status.innerText = "Downloading Game Data...";
-                const res = await fetch(BASE + "index.pck");
-                
-                if (!res.ok) throw new Error(`PCK missing at ${BASE}index.pck`);
-                
-                const buffer = await res.arrayBuffer();
-
-                status.innerText = "Injecting PCK...";
-                engine.copyToFS("index.pck", buffer);
-
-                status.innerText = "Starting Engine...";
-                await engine.start(["--main-pack", "index.pck"]);
-                
-                document.getElementById('overlay').style.display = 'none';
-            } catch (err) {
-                console.error("Boot Error:", err);
-                status.innerText = "FATAL: " + err.message;
-                status.style.color = "#ff4444";
-            }
+            loadEngine();
         });
+
+        function loadEngine() {
+            msg.innerText = "PHASE 1: Fetching Loader...";
+            
+            // Step 1: Inject the JS file into the page
+            const script = document.createElement("script");
+            script.src = JS_URL;
+            
+            script.onload = async () => {
+                msg.innerText = "PHASE 2: Initializing WASM Core...";
+                
+                // Initialize the Godot Engine
+                const engine = new Engine({
+                    canvas: document.getElementById('canvas'),
+                    // This tells the engine exactly where to find the .wasm file
+                    locateFile: (path) => {
+                        if (path.endsWith('.wasm')) return WASM_URL;
+                        return REPO_BASE + path;
+                    }
+                });
+
+                try {
+                    // Start the engine core
+                    await engine.init(REPO_BASE + "index");
+
+                    msg.innerText = "PHASE 3: Downloading Game Assets...";
+                    // Step 2: Manually fetch the PCK file (The game data)
+                    const response = await fetch(PCK_URL);
+                    if (!response.ok) throw new Error("Could not reach index.pck");
+                    const arrayBuffer = await response.arrayBuffer();
+
+                    msg.innerText = "PHASE 4: Booting Filesystem...";
+                    // Use the function from your index.js to "inject" the pck
+                    engine.copyToFS("index.pck", arrayBuffer);
+
+                    // Step 3: Launch
+                    msg.innerText = "SYSTEM ONLINE";
+                    await engine.start(["--main-pack", "index.pck"]);
+                    
+                    // Hide the overlay when the game starts
+                    document.getElementById('status-overlay').style.display = 'none';
+
+                } catch (err) {
+                    console.error(err);
+                    msg.innerText = "CRITICAL FAILURE: " + err.message;
+                    msg.style.color = "red";
+                }
+            };
+
+            script.onerror = () => {
+                msg.innerText = "FAILED TO LOAD index.js. Check GitHub links.";
+            };
+
+            document.body.appendChild(script);
+        }
     </script>
 </body>
 </html>
